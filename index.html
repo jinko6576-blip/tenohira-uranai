@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>てのひら占い ‑ やさしい手相とうらない</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#F9F6F0;      /* 生成り・アイボリー */
+    --forest:#2C4A3E;     /* フォレストグリーン */
+    --gold:#D4AF37;       /* 朝露のゴールド */
+    --sprout:#A3C1AD;     /* 新緑のグリーン */
+    --olive:#6E7B3D;      /* オリーブグリーン（数秘の文字） */
+    --card:#FFFFFF;
+    --soft:#EFEADF;
+    --shadow:0 10px 30px -12px rgba(44,74,62,.28);
+    --radius:22px;
+    --serif:"Shippori Mincho", "Hiragino Mincho ProN", serif;
+    --sans:"Zen Maru Gothic", "Hiragino Maru Gothic ProN", system-ui, sans-serif;
+  }
+
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ margin:0; padding:0; }
+  body{
+    font-family:var(--sans);
+    color:var(--forest);
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(163,193,173,.28), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(212,175,55,.12), transparent 55%),
+      var(--cream);
+    min-height:100vh; min-height:100dvh;
+    line-height:1.7; -webkit-font-smoothing:antialiased;
+    padding:
+      calc(env(safe-area-inset-top) + 14px)
+      calc(env(safe-area-inset-right) + 16px)
+      calc(env(safe-area-inset-bottom) + 28px)
+      calc(env(safe-area-inset-left) + 16px);
+  }
+  .wrap{ max-width:540px; margin:0 auto; }
+
+  header{ text-align:center; margin:6px 0 18px; }
+  .logo{ display:inline-flex; align-items:center; gap:8px; }
+  .logo svg{ width:30px; height:30px; }
+  h1{ font-family:var(--serif); font-weight:700; font-size:1.5rem; letter-spacing:.04em; margin:0; }
+  .tagline{ font-size:.78rem; color:#6f8478; margin-top:4px; letter-spacing:.02em; }
+
+  .tabs{ display:flex; gap:6px; margin:16px auto 22px; background:var(--soft); padding:5px; border-radius:999px; max-width:340px; }
+  .tab{ flex:1; border:none; background:transparent; cursor:pointer; font-family:var(--sans); font-weight:700; font-size:.92rem; color:#7c8d83; padding:11px 8px; border-radius:999px; transition:.25s; }
+  .tab.active{ background:var(--forest); color:#fbfaf6; box-shadow:var(--shadow); }
+
+  .screen{ display:none; animation:fade .5s ease; }
+  .screen.active{ display:block; }
+  @keyframes fade{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;} }
+
+  .card{ background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); padding:24px 22px; margin-bottom:18px; border:1px solid rgba(44,74,62,.06); }
+  .step-label{ display:inline-flex; align-items:center; gap:7px; font-family:var(--serif); font-weight:600; font-size:1.06rem; margin-bottom:16px; }
+  .step-label .leaf{ width:18px; height:18px; color:var(--sprout); }
+
+  label.fld{ display:block; font-size:.8rem; color:#6f8478; margin:0 0 6px 2px; font-weight:500;}
+  .date-row{ display:flex; gap:9px; }
+  .date-row .col{ flex:1; }
+  select, input[type="number"]{ width:100%; font-family:var(--sans); font-size:1.05rem; color:var(--forest); background:var(--cream); border:1.5px solid var(--soft); border-radius:14px; padding:13px 12px; appearance:none; -webkit-appearance:none; text-align:center; }
+  select:focus, input:focus{ outline:none; border-color:var(--sprout); }
+  .select-wrap{ position:relative; }
+  .select-wrap::after{ content:"▾"; position:absolute; right:12px; top:50%; transform:translateY(-50%); color:var(--sprout); pointer-events:none; font-size:.85rem; }
+
+  .btn{ display:block; width:100%; cursor:pointer; border:none; font-family:var(--sans); font-weight:700; font-size:1.05rem; color:#fbfaf6; background:var(--forest); padding:16px; border-radius:16px; margin-top:18px; box-shadow:var(--shadow); transition:transform .15s, opacity .2s; letter-spacing:.03em; }
+  .btn:active{ transform:scale(.98); }
+  .btn.ghost{ background:transparent; color:var(--forest); border:1.5px solid var(--sprout); box-shadow:none; margin-top:10px; }
+  .btn.gold{ background:linear-gradient(120deg,#caa233,#e6c659); color:#3a3013; }
+
+  .hint{ font-size:.76rem; color:#94a39a; text-align:center; margin-top:12px; }
+
+  .cam-stage{ position:relative; width:100%; aspect-ratio:3/4; border-radius:18px; overflow:hidden; background:#e7e2d6; display:flex; align-items:center; justify-content:center; }
+  .cam-stage video, .cam-stage img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .cam-fallback{ color:#8a9890; font-size:.86rem; text-align:center; padding:20px; }
+  .guide{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; opacity:.55; mix-blend-mode:multiply; }
+  .guide .hand{ fill:none; stroke:var(--sprout); stroke-width:2.2; stroke-dasharray:6 7; opacity:.8;}
+  .guide .vein{ stroke:var(--gold); stroke-width:1.1; opacity:.55; fill:none;}
+  .guide .leaf{ fill:var(--sprout); opacity:.5;}
+  .cam-tip{ position:absolute; bottom:10px; left:0; right:0; text-align:center; color:#fff; font-size:.78rem; text-shadow:0 1px 6px rgba(0,0,0,.45); letter-spacing:.02em; }
+
+  #analyze{ display:none; }
+  .analyze-box{ position:relative; overflow:hidden; text-align:center; padding:46px 22px; border-radius:var(--radius); background:linear-gradient(160deg,#fbfaf4,#f1ede2); box-shadow:var(--shadow); }
+  .analyze-box .sweep{ position:absolute; top:0; left:-60%; width:55%; height:100%; background:linear-gradient(100deg, transparent, rgba(212,175,55,.45) 35%, rgba(163,193,173,.55) 55%, transparent); filter:blur(4px); animation:sweep 1.15s ease-in-out infinite; }
+  @keyframes sweep{ 0%{left:-60%;} 100%{left:120%;} }
+  .spinner{ width:54px; height:54px; margin:0 auto 16px; animation:spin 2.4s linear infinite; }
+  @keyframes spin{ to{ transform:rotate(360deg);} }
+  .analyze-box h3{ font-family:var(--serif); margin:.2em 0; font-size:1.1rem; }
+  .analyze-box p{ font-size:.82rem; color:#7c8d83; margin:0; }
+  .spark{ position:absolute; width:6px; height:6px; border-radius:50%; background:var(--gold); box-shadow:0 0 8px 2px rgba(212,175,55,.7); animation:twinkle 1.4s ease-in-out infinite; }
+  @keyframes twinkle{ 0%,100%{opacity:0; transform:scale(.4);} 50%{opacity:1; transform:scale(1);} }
+
+  #results{ display:none; }
+  .result-head{ text-align:center; margin-bottom:8px; }
+  .result-head h2{ font-family:var(--serif); font-size:1.3rem; margin:0; }
+  .result-head .sub{ font-size:.78rem; color:#8a9890; }
+
+  .essence{ text-align:center; padding:22px; background:linear-gradient(160deg,#fbfaf4,#f3f6ef); border:1px dashed var(--sprout); }
+  .essence .num{ font-family:var(--serif); font-size:2.6rem; color:var(--gold); line-height:1; }
+  .essence .lp-label{ font-size:.75rem; color:#8a9890; letter-spacing:.16em; }
+  .essence .type{ font-family:var(--serif); font-weight:700; color:var(--olive); font-size:1.18rem; margin-top:10px; }
+  .essence .type small{ display:block; font-family:var(--sans); font-weight:500; color:var(--olive); opacity:.85; font-size:.82rem; margin-top:5px; }
+
+  /* AI手相 */
+  .palm-pending{ text-align:center; color:#7c8d83; font-size:.88rem; background:var(--cream); border-radius:14px; padding:20px 16px; }
+  .palm-pending small{ display:block; margin-top:8px; color:#9aa89f; font-size:.78rem; }
+  .palm-summary{ font-family:var(--serif); font-weight:700; text-align:center; font-size:1.06rem; color:var(--olive); margin-bottom:12px; }
+  .palm-line{ display:flex; flex-direction:column; gap:3px; padding:11px 14px; background:var(--cream); border-radius:14px; margin-bottom:8px; }
+  .pl-name{ font-family:var(--serif); font-weight:700; font-size:.9rem; color:var(--forest); }
+  .pl-msg{ font-size:.84rem; }
+  .palm-advice{ background:linear-gradient(160deg,#fff6e2,#fef0d6); border:1px solid rgba(212,175,55,.4); border-radius:14px; padding:14px 16px; font-size:.86rem; margin-top:6px; }
+
+  .star-pill{ display:inline-block; font-family:var(--serif); font-weight:600; background:var(--forest); color:#fbfaf6; padding:5px 16px; border-radius:999px; font-size:.92rem; margin-bottom:4px; }
+  .timeline{ list-style:none; margin:14px 0 0; padding:0; }
+  .timeline li{ display:grid; grid-template-columns:auto 1fr; gap:12px; align-items:start; padding:11px 12px; border-radius:14px; margin-bottom:7px; background:var(--cream); }
+  .timeline li.warm{ background:linear-gradient(120deg,#fff6e2,#fef0d6); border:1px solid rgba(212,175,55,.4);}
+  .timeline li.rest{ background:linear-gradient(120deg,#eef5ef,#e6f0e9); border:1px solid rgba(163,193,173,.5);}
+  .timeline .yr{ font-family:var(--serif); font-weight:700; font-size:1rem; color:var(--forest); min-width:54px; }
+  .timeline .yr small{ display:block; font-family:var(--sans); font-weight:500; font-size:.66rem; color:#9aa89f;}
+  .timeline .msg{ font-size:.84rem; }
+  .timeline .msg b{ color:var(--olive); font-family:var(--serif); }
+
+  .shield{ margin-top:6px; padding:20px; background:linear-gradient(160deg,#2c4a3e,#3a5d4e); color:#f6f3e9; border-radius:var(--radius); position:relative; overflow:hidden; }
+  .shield::before{ content:""; position:absolute; right:-30px; top:-30px; width:130px; height:130px; background:radial-gradient(circle, rgba(212,175,55,.45), transparent 70%); }
+  .shield h3{ font-family:var(--serif); margin:0 0 8px; font-size:1.08rem; display:flex; gap:8px; align-items:center;}
+  .shield p{ margin:0; font-size:.86rem; color:#e8e3d3; }
+  .shield .tag{ display:inline-block; background:rgba(212,175,55,.22); color:var(--gold); border:1px solid rgba(212,175,55,.5); padding:2px 10px; border-radius:999px; font-size:.72rem; margin:3px 5px 0 0; font-weight:700;}
+
+  .tarot-intro{ text-align:center; font-size:.84rem; color:#7c8d83; margin-bottom:14px; }
+  .tarot-row{ display:flex; gap:10px; justify-content:center; perspective:900px; flex-wrap:wrap;}
+  .tcard{ width:78px; height:124px; cursor:pointer; position:relative; transform-style:preserve-3d; transition:transform .7s cubic-bezier(.2,.8,.2,1); border-radius:12px; }
+  .tcard.shuffling{ animation:shuffle .5s ease; }
+  @keyframes shuffle{ 0%{transform:translateY(0) rotate(0);} 50%{transform:translateY(-14px) rotate(-4deg);} 100%{transform:none;} }
+  .tcard.flipped{ transform:rotateY(180deg); }
+  .tface{ position:absolute; inset:0; border-radius:12px; backface-visibility:hidden; -webkit-backface-visibility:hidden; display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow); }
+  .tback{ background:linear-gradient(160deg,#2f5043,#264035); border:2px solid var(--gold); }
+  .tback svg{ width:48px; height:48px; opacity:.92; }
+  .tfront{ background:linear-gradient(160deg,#fbfaf4,#f2eee2); transform:rotateY(180deg); border:2px solid var(--sprout); flex-direction:column; gap:4px; padding:6px; text-align:center; }
+  .tfront .emoji{ font-size:1.7rem; }
+  .tfront .tname{ font-family:var(--serif); font-size:.66rem; font-weight:700; }
+  .tfront .pos{ font-size:.56rem; color:#9aa89f; }
+  .tarot-result{ margin-top:16px; display:none; }
+  .tarot-result .card{ background:linear-gradient(160deg,#fbfaf4,#f3f6ef); border:1px dashed var(--gold); margin:0;}
+  .tarot-result .tr-name{ font-family:var(--serif); font-weight:700; font-size:1.1rem; text-align:center;}
+  .tarot-result .tr-pos{ text-align:center; font-size:.74rem; color:#8a9890; letter-spacing:.1em; margin-bottom:8px;}
+  .tarot-result .tr-msg{ font-size:.9rem; text-align:center; }
+
+  .pair-grid{ display:flex; gap:12px; }
+  .pair-grid .person{ flex:1; }
+  .person h4{ font-family:var(--serif); text-align:center; margin:0 0 10px; font-size:1rem;}
+  .compat-score{ text-align:center; padding:8px 0 4px; }
+  .compat-score .pct{ font-family:var(--serif); font-size:3rem; color:var(--gold); line-height:1; }
+  .compat-score .pct small{ font-size:1.1rem; }
+  .hearts{ font-size:1.05rem; letter-spacing:3px; color:var(--sprout); margin-top:4px; }
+  .compat-msg{ text-align:center; font-size:.92rem; margin-top:6px; }
+  .compat-advice{ background:var(--cream); border-radius:14px; padding:14px 16px; margin-top:14px; font-size:.86rem;}
+  .compat-advice .lbl{ font-family:var(--serif); font-weight:700; color:var(--olive); display:block; margin-bottom:4px;}
+
+  .footer-note{ text-align:center; font-size:.72rem; color:#a9b4ab; margin-top:8px; line-height:1.6;}
+  .divider{ height:1px; background:var(--soft); margin:18px 0; border:none; }
+
+  @media (max-width:360px){ .tcard{ width:66px; height:106px; } h1{ font-size:1.32rem; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <span class="logo">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 21c0-5 0-9 0-12M12 9c-3-1-5-4-4-7 3 0 5 2 4 7Zm0 0c3-1 5-4 4-7-3 0-5 2-4 7Z" stroke="#2C4A3E" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <h1>てのひら占い</h1>
+    </span>
+    <div class="tagline">あなたの毎日に、そっと寄りそうやさしい占い</div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" data-screen="fortune">手相＆占い</button>
+    <button class="tab" data-screen="compat">相性診断</button>
+  </div>
+
+  <!-- ===================== 画面1：手相＆占い ===================== -->
+  <section id="fortune" class="screen active">
+
+    <!-- ステップ1：生年月日 -->
+    <div class="card" id="step1">
+      <div class="step-label"><svg class="leaf" viewBox="0 0 24 24" fill="currentColor"><path d="M5 19c0-8 6-14 14-14 0 8-6 14-14 14Z"/></svg>生年月日を教えてください</div>
+      <label class="fld">あなたが生まれた日</label>
+      <div class="date-row">
+        <div class="col select-wrap"><select id="year"></select></div>
+        <div class="col select-wrap"><select id="month"></select></div>
+        <div class="col select-wrap"><select id="day"></select></div>
+      </div>
+      <button class="btn" id="toStep2">手相を見てもらう →</button>
+      <div class="hint">入力した情報はこの端末だけで計算され、占い結果づくり以外には使いません。</div>
+    </div>
+
+    <!-- ステップ2：カメラ撮影 -->
+    <div class="card" id="step2" style="display:none;">
+      <div class="step-label"><svg class="leaf" viewBox="0 0 24 24" fill="currentColor"><path d="M5 19c0-8 6-14 14-14 0 8-6 14-14 14Z"/></svg>手のひらをそっと写してみましょう</div>
+      <div class="cam-stage" id="camStage">
+        <video id="video" playsinline autoplay muted></video>
+        <svg class="guide" viewBox="0 0 300 400" preserveAspectRatio="xMidYMid meet">
+          <path class="hand" d="M150 360
+            C120 360 104 330 104 300 L104 250
+            M104 250 C100 235 96 200 96 175 C96 165 110 165 112 178 L116 250
+            M120 245 L116 150 C115 138 130 138 131 150 L135 245
+            M139 244 L138 138 C137 126 152 126 153 138 L155 244
+            M159 245 L162 150 C163 138 178 139 177 151 L172 248
+            M176 252 L196 205 C202 192 214 200 208 214 L186 270
+            C200 300 196 360 150 360 Z" />
+          <path class="vein" d="M150 350 C140 320 145 300 150 280 M150 350 C160 318 158 296 168 280 M150 350 C150 322 152 300 152 285"/>
+          <g class="leaf">
+            <path d="M96 175c-10-4-16-14-12-24 9 1 15 8 12 24Z"/>
+            <path d="M208 214c10-4 16-14 12-24-9 1-15 8-12 24Z"/>
+          </g>
+        </svg>
+        <div class="cam-tip">うっすらした葉っぱのガイドに、手のひらをそっと重ねてね</div>
+      </div>
+      <button class="btn" id="shutter">📸 シャッター</button>
+      <input type="file" id="fileInput" accept="image/*" capture="environment" style="display:none;">
+      <button class="btn ghost" id="uploadBtn">写真をアップロードする</button>
+      <div class="hint">カメラが使えないときは、アップロードでもOKです。</div>
+    </div>
+
+    <!-- ステップ3：解析演出 -->
+    <div id="analyze">
+      <div class="analyze-box">
+        <div class="sweep"></div>
+        <svg class="spinner" viewBox="0 0 24 24" fill="none"><path d="M12 21c0-5 0-9 0-12M12 9c-3-1-5-4-4-7 3 0 5 2 4 7Zm0 0c3-1 5-4 4-7-3 0-5 2-4 7Z" stroke="#A3C1AD" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <h3>手のひらの物語を読み解いています</h3>
+        <p>朝露の光と新緑のきらめきが、あなたの運命をやさしく照らしています…</p>
+      </div>
+    </div>
+
+    <!-- ステップ4：結果 -->
+    <div id="results">
+      <div class="result-head">
+        <h2>あなたへの読み解き</h2>
+        <div class="sub">生まれた日と手のひらが教えてくれたこと</div>
+      </div>
+
+      <!-- 数秘術 -->
+      <div class="card essence">
+        <div class="lp-label">L I F E   P A T H</div>
+        <div class="num" id="lpNum">7</div>
+        <div class="type" id="lpType"></div>
+      </div>
+
+      <!-- AIによる手相の読み解き -->
+      <div class="card" id="palmCard">
+        <div class="step-label" style="margin-bottom:10px;"><svg class="leaf" viewBox="0 0 24 24" fill="currentColor"><path d="M5 19c0-8 6-14 14-14 0 8-6 14-14 14Z"/></svg>AIが読み解いた、あなたの手のひら</div>
+        <div id="palmBody"></div>
+      </div>
+
+      <!-- 六星占術 運気年表 -->
+      <div class="card">
+        <div class="step-label" style="margin-bottom:10px;"><svg class="leaf" viewBox="0 0 24 24" fill="currentColor"><path d="M5 19c0-8 6-14 14-14 0 8-6 14-14 14Z"/></svg>これからの12年の運気カレンダー</div>
+        <div style="text-align:center;"><span class="star-pill" id="starPill">水星人＋</span></div>
+        <ul class="timeline" id="timeline"></ul>
+      </div>
+
+      <!-- 手相 最強の盾 -->
+      <div class="shield">
+        <h3>🛡️ あなたの手のひらに刻まれた、最強のお守り</h3>
+        <p>ただし、あなたの手のひらには不測の事態をすべて弾き返す<b>【両手の神秘十字線】</b>と、強靭なタフさを持つ<b>【長い生命線】</b>が刻まれています。この最強の盾があるので、のんびり休んでいればノーダメージで切り抜けられます！</p>
+        <div style="margin-top:10px;">
+          <span class="tag">神秘十字線</span>
+          <span class="tag">長い生命線</span>
+          <span class="tag">守られている手</span>
+        </div>
+      </div>
+
+      <!-- 本日のタロット -->
+      <div class="card">
+        <div class="step-label" style="margin-bottom:6px; justify-content:center;"><svg class="leaf" viewBox="0 0 24 24" fill="currentColor"><path d="M5 19c0-8 6-14 14-14 0 8-6 14-14 14Z"/></svg>本日のタロットアドバイス</div>
+        <div class="tarot-intro">気になる1枚を、そっとタップしてめくってみてください。</div>
+        <div class="tarot-row" id="tarotRow"></div>
+        <div class="tarot-result" id="tarotResult">
+          <div class="card">
+            <div class="tr-name" id="trName"></div>
+            <div class="tr-pos" id="trPos"></div>
+            <div class="tr-msg" id="trMsg"></div>
+          </div>
+        </div>
+        <button class="btn ghost" id="reshuffle" style="display:none;">もう一度シャッフルする</button>
+      </div>
+
+      <button class="btn gold" id="restart">最初からもう一度占う</button>
+      <div class="footer-note">手相の読み解きは、AIが写真を見てつくる「あなたへのやさしい読みもの」です。<br>身近な人とのあたたかい会話のきっかけとして、娯楽としてお楽しみください 🌿</div>
+    </div>
+
+  </section>
+
+  <!-- ===================== 画面2：相性診断 ===================== -->
+  <section id="compat" class="screen">
+    <div class="card" id="compatInput">
+      <div class="step-label" style="justify-content:center;"><svg class="leaf" viewBox="0 0 24 24" fill="currentColor"><path d="M5 19c0-8 6-14 14-14 0 8-6 14-14 14Z"/></svg>ふたりの相性を見てみましょう</div>
+      <div class="pair-grid">
+        <div class="person">
+          <h4>あなた</h4>
+          <div class="date-row" style="flex-direction:column; gap:8px;">
+            <div class="select-wrap"><select id="cy1"></select></div>
+            <div class="select-wrap"><select id="cm1"></select></div>
+            <div class="select-wrap"><select id="cd1"></select></div>
+          </div>
+        </div>
+        <div class="person">
+          <h4>お相手</h4>
+          <div class="date-row" style="flex-direction:column; gap:8px;">
+            <div class="select-wrap"><select id="cy2"></select></div>
+            <div class="select-wrap"><select id="cm2"></select></div>
+            <div class="select-wrap"><select id="cd2"></select></div>
+          </div>
+        </div>
+      </div>
+      <button class="btn" id="calcCompat">相性を占う ♡</button>
+      <div class="hint">名前は要りません。生まれた日だけで、やさしく読み解きます。</div>
+    </div>
+
+    <div class="card" id="compatResult" style="display:none;">
+      <div class="compat-score">
+        <div class="pct" id="compatPct">88<small>%</small></div>
+        <div class="hearts" id="compatHearts">♥♥♥♥♡</div>
+      </div>
+      <div class="compat-msg" id="compatMsg"></div>
+      <hr class="divider">
+      <div class="compat-advice">
+        <span class="lbl">🌿 ふたりへのやさしいヒント</span>
+        <span id="compatAdvice"></span>
+      </div>
+      <button class="btn gold" id="compatAgain">別の相手と占う</button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* ===================================================================
+   てのひら占い ‑ ロジック
+   =================================================================== */
+
+/* ===== サーバー設定 =====
+   かんよみくんと同じRenderサーバー。手相は /api/palm を使います。
+   サーバーの server.js を差し替えるまで、手相のAI読み解きは
+   「準備中」と表示されます（差し替えると自動で本物に切り替わります）。 */
+const API_BASE = 'https://kanji-api-server-duaj.onrender.com';
+
+/* ---------- セレクトボックス生成 ---------- */
+function fillDate(yEl, mEl, dEl){
+  const y=document.getElementById(yEl), m=document.getElementById(mEl), d=document.getElementById(dEl);
+  const now=new Date().getFullYear();
+  let o='<option value="" disabled selected>年</option>';
+  for(let i=now;i>=1925;i--) o+=`<option value="${i}">${i}年</option>`; y.innerHTML=o;
+  o='<option value="" disabled selected>月</option>';
+  for(let i=1;i<=12;i++) o+=`<option value="${i}">${i}月</option>`; m.innerHTML=o;
+  o='<option value="" disabled selected>日</option>';
+  for(let i=1;i<=31;i++) o+=`<option value="${i}">${i}日</option>`; d.innerHTML=o;
+}
+fillDate('year','month','day');
+fillDate('cy1','cm1','cd1');
+fillDate('cy2','cm2','cd2');
+
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ---------- 数秘術：ライフパスナンバー ---------- */
+function reduceNum(n){ while(n>9 && n!==11 && n!==22 && n!==33){ n=String(n).split('').reduce((a,b)=>a+Number(b),0);} return n; }
+function lifePath(y,m,d){ return reduceNum(reduceNum(y)+reduceNum(m)+reduceNum(d)); }
+const LP_TYPES = {
+  1:["道を切り拓くパイオニアタイプ","先頭に立つ強さと行動力で、まわりを引っぱっていく人"],
+  2:["みんなを支える名サポータータイプ","思いやりと協調の達人。そばにいるだけで安心される人"],
+  3:["場を明るくするエンターテイナータイプ","表現力と笑顔で、まわりをぱっと明るくするムードメーカー"],
+  4:["コツコツ積み上げる堅実な職人タイプ","信頼を一つずつ築いていく、まじめで誠実な努力家"],
+  5:["自由を愛する好奇心の冒険家タイプ","変化を楽しみ、風のように軽やかに進んでいく人"],
+  6:["愛情あふれる世話上手タイプ","まわりをあたたかく包む、癒やしと愛情の持ち主"],
+  7:["こだわりを持つ職人肌のクリエイタータイプ","探究心と美意識で、自分だけの世界を磨き上げる人"],
+  8:["大きな夢を叶えるパワフルな実力者タイプ","情熱とスケールの大きさで、目標を形にしていく人"],
+  9:["やさしさで包む賢者タイプ","広い視野と思いやりで、みんなをそっと導く人"],
+  11:["直感がさえわたるスペシャリストタイプ","繊細なアンテナを持つ、感性ゆたかなひらめきの人"],
+  22:["大きな理想を形にするマスタービルダータイプ","夢を現実へと変えていく、まれにみる実現力の持ち主"],
+  33:["無償の愛をそそぐヒーラータイプ","まわりを癒やす、大きくてあたたかい愛の人"]
+};
+
+/* ---------- 六星占術（簡易判定）＋ 12年運気カレンダー ---------- */
+const STARS=['土星人','金星人','火星人','天王星人','木星人','水星人'];
+function calcStar(y,m,d){ const idx=(y*1+m*3+d)%6; const sign=((y+d)%2===0)?'＋':'－'; return { name:STARS[idx]+sign, idx }; }
+const CYCLE=[
+  {n:"種子",t:"あたらしい種まきの季節 🌱",m:"未来の自分への種をまく、わくわくスタートの一年。",cls:""},
+  {n:"緑生",t:"芽吹きのよろこび 🌿",m:"まいた種が小さな芽を出す、希望がぐんぐん育つ一年。",cls:""},
+  {n:"立花",t:"花ひらく季節 🌸",m:"あなたの魅力が満開になる、いちばん華やかな一年。",cls:""},
+  {n:"健弱",t:"頑張り屋さんタイマー作動中 ⏰",m:"体が休憩を求めている大吉日。ゆっくり整えるほど運が開く一年。",cls:"rest"},
+  {n:"達成",t:"実りの収穫祭 🍇",m:"これまでの努力が、うれしい形になって返ってくる一年。",cls:""},
+  {n:"乱気",t:"心の衣替えタイム 🍃",m:"気持ちが揺れやすいぶん、新しい自分に出会える一年。",cls:""},
+  {n:"再会",t:"なつかしさの贈りもの 🎁",m:"大切なご縁や良いものが、ふわっと戻ってくる、ほっこりの一年。",cls:""},
+  {n:"財成",t:"ゆたかさが満ちる季節 💰",m:"心もお財布もうるおう、めぐみ豊かな一年。",cls:""},
+  {n:"安定",t:"おだやかな晴れの日 ☀️",m:"すべてが落ち着く、心地よく安定した一年。",cls:""},
+  {n:"陥落",t:"人生の温泉タイム ♨️",m:"自分をトコトン甘やかすメンテナンス期間。のんびりが正解の一年。",cls:"warm"},
+  {n:"停止",t:"静かなおやすみモード 🛌",m:"無理せずのんびり、英気を養うリセット期間。やさしく過ごす一年。",cls:"warm"},
+  {n:"減退",t:"そっと充電タイム 🔋",m:"来る春のために力をためる、やさしい準備期間の一年。",cls:"warm"}
+];
+function buildTimeline(y,m,d,starIdx){
+  const startYear=2026; const offset=(y+m+d+starIdx)%12; let html="";
+  for(let i=0;i<12;i++){ const c=CYCLE[(offset+i)%12]; const year=startYear+i; const age=year-y;
+    html+=`<li class="${c.cls}"><span class="yr">${year}<small>${age}才</small></span><span class="msg"><b>${c.t}</b><br>${c.m}</span></li>`; }
+  return html;
+}
+
+/* ---------- タロット（22枚・すべて前向きな言い換え） ---------- */
+const TAROT=[
+  {n:"愚者",e:"🍃",u:"新しい一歩にぴったりの日。直感を信じて、軽やかに進んでみて。",r:"立ち止まって深呼吸する時間も宝物。今は準備をたのしむ期間です。"},
+  {n:"魔術師",e:"🌟",u:"あなたの才能が輝くとき。やりたいことに思いきって手を伸ばして。",r:"自分の中に眠る力に気づくとき。ひとつずつ整えれば必ず動き出します。"},
+  {n:"女教皇",e:"🌙",u:"静かな直感が冴える日。心が「いいな」と感じた方へ進んで大丈夫。",r:"自分の本音にやさしく耳をすませて。答えはもうあなたの中にあります。"},
+  {n:"女帝",e:"🌷",u:"豊かさと愛情に包まれる日。自分にもまわりにも、たっぷり優しくして。",r:"まずは自分を満たす番。好きなことで心を潤してあげましょう。"},
+  {n:"皇帝",e:"🌳",u:"頼れる安定感が味方する日。落ち着いて取り組めば、物事が形になります。",r:"肩の力を抜いてOK。ゆるめるほど、ちょうどよく回り出します。"},
+  {n:"教皇",e:"📖",u:"良き学びや導きに出会える日。素直に教わると、世界が広がります。",r:"自分らしいやり方を選んでいいとき。あなたの感覚を大切に。"},
+  {n:"恋人",e:"💞",u:"心が通うつながりが生まれる日。素直な気持ちを伝えてみて。",r:"自分が本当に大切にしたいものを選び直す、すてきなチャンスです。"},
+  {n:"戦車",e:"🌿",u:"前へ進む追い風の日。決めたことに迷わず突き進んで大丈夫。",r:"いったん速度をゆるめて。方向を整えれば、より遠くへ行けます。"},
+  {n:"力",e:"🦁",u:"やさしさという本物の強さが輝く日。穏やかな心がすべてを動かします。",r:"自分を責めないで。あるがままのあなたで、もう十分に強いのです。"},
+  {n:"隠者",e:"🕯️",u:"内なる答えと出会える静かな日。ひとり時間が心を整えてくれます。",r:"少しずつ外へ。あたためた想いを、そっと人と分かち合うときです。"},
+  {n:"運命の輪",e:"☘️",u:"うれしい転機が訪れる日。流れに乗ると、良い方へ運ばれていきます。",r:"巡りはいつも続いています。今の一歩が、次の幸運の入り口に。"},
+  {n:"正義",e:"⚖️",u:"バランスよく公正に進む日。誠実なふるまいが、良い結果を呼びます。",r:"完璧でなくて大丈夫。自分にも優しい「ちょうどよさ」を大切に。"},
+  {n:"吊られた男",e:"🌀",u:"視点を変えるチャンスの日。少し見方を変えると、答えがふっと見えます。",r:"いよいよ動き出すサイン。手放したぶん、新しい風が入ってきます。"},
+  {n:"死神",e:"🦋",u:"新しいスタートのためのデトックスの日。古いものを手放すと心が軽く。",r:"再生のとき。終わったように見えても、ちゃんと次へつながっています。"},
+  {n:"節制",e:"🍵",u:"ちょうどよい調和が訪れる日。穏やかなペースが、すべてを整えます。",r:"自分のリズムを取り戻すとき。あせらずゆっくりで大丈夫。"},
+  {n:"悪魔",e:"🍫",u:"自分の欲やワクワクに正直になっていい日。好きを楽しむことが開運に。",r:"我慢からの解放のとき。重たいものを手放して、心も身軽に。"},
+  {n:"塔",e:"🌬️",u:"古いものが片づいて、新しい風が入る日。変化はうれしい前ぶれです。",r:"こわばりがほどけるとき。肩の荷が下りて、すっと楽になります。"},
+  {n:"星",e:"⭐",u:"希望の光がさす日。願いをそっと言葉にすると、未来が動き出します。",r:"あなたはもう守られています。自分の光を、もう一度信じて大丈夫。"},
+  {n:"月",e:"🌝",u:"想像力とやさしい癒やしの日。夢やひらめきを大切にしてみて。",r:"もやが晴れていくとき。心配ごとは、思ったより軽くなっていきます。"},
+  {n:"太陽",e:"🌻",u:"大きなよろこびに満ちる日。笑顔でいるほど、幸運が集まってきます。",r:"小さな幸せに気づくとき。あたりまえの毎日が、実はきらめいています。"},
+  {n:"審判",e:"🌅",u:"うれしい復活・再生の日。やり直したい気持ちが、追い風になります。",r:"自分を許してあげるとき。新しい一歩は、もう始まっています。"},
+  {n:"世界",e:"🌍",u:"ひとつの完成と達成の日。よく頑張った自分を、たっぷりねぎらって。",r:"次のステージへの入り口。あと少しの仕上げが、未来を開きます。"}
+];
+
+let userBirth=null;
+
+/* ---------- 占う本体（写真以外の固定ロジック部分） ---------- */
+function runFortune(){
+  const {y,m,d}=userBirth;
+  const lp=lifePath(y,m,d);
+  document.getElementById('lpNum').textContent=lp;
+  const t=LP_TYPES[lp]||LP_TYPES[1];
+  document.getElementById('lpType').innerHTML=`あなたの本質：${t[0]}<small>${t[1]}</small>`;
+  const star=calcStar(y,m,d);
+  document.getElementById('starPill').textContent=star.name;
+  document.getElementById('timeline').innerHTML=buildTimeline(y,m,d,star.idx);
+  setupTarot();
+}
+
+/* ---------- タロット表示 ---------- */
+function setupTarot(){
+  const row=document.getElementById('tarotRow');
+  const result=document.getElementById('tarotResult');
+  const reshuffle=document.getElementById('reshuffle');
+  result.style.display='none'; reshuffle.style.display='none';
+  const pool=[...Array(TAROT.length).keys()];
+  for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
+  const picks=pool.slice(0,5).map(idx=>({idx,upright:Math.random()<0.5}));
+  row.innerHTML='';
+  const backSVG=`<svg viewBox="0 0 24 24" fill="none"><path d="M12 21c0-6 0-9 0-12M12 9c-4-1-6-5-5-8 4 0 6 3 5 8Zm0 0c4-1 6-5 5-8-4 0-6 3-5 8Z" stroke="#D4AF37" stroke-width="1.4" stroke-linecap="round"/></svg>`;
+  picks.forEach((p,i)=>{
+    const card=document.createElement('div'); card.className='tcard shuffling'; card.style.animationDelay=(i*0.06)+'s';
+    const tarot=TAROT[p.idx]; const posLabel=p.upright?'正位置':'逆位置'; const msg=p.upright?tarot.u:tarot.r;
+    card.innerHTML=`<div class="tface tback">${backSVG}</div><div class="tface tfront"><span class="emoji">${tarot.e}</span><span class="tname">${tarot.n}</span><span class="pos">${posLabel}</span></div>`;
+    card.addEventListener('click',()=>{
+      if(row.dataset.locked) return; row.dataset.locked="1";
+      card.classList.add('flipped');
+      [...row.children].forEach(c=>{ if(c!==card){ c.style.opacity='.35'; c.style.transform='scale(.94)'; }});
+      setTimeout(()=>{
+        document.getElementById('trName').textContent=tarot.n;
+        document.getElementById('trPos').textContent=posLabel+' の メッセージ';
+        document.getElementById('trMsg').textContent=msg;
+        result.style.display='block'; reshuffle.style.display='block';
+        result.scrollIntoView({behavior:'smooth',block:'center'});
+      },500);
+    });
+    row.appendChild(card);
+    setTimeout(()=>card.classList.remove('shuffling'),500+i*60);
+  });
+  row.dataset.locked="";
+}
+document.getElementById('reshuffle').addEventListener('click',setupTarot);
+
+/* ===================================================================
+   写真の取得 ＆ AI手相（/api/palm）
+   =================================================================== */
+function captureFromVideo(){
+  const v=document.getElementById('video');
+  if(!v.videoWidth) return null;
+  const maxW=1024, scale=Math.min(1,maxW/v.videoWidth);
+  const canvas=document.createElement('canvas');
+  canvas.width=Math.round(v.videoWidth*scale);
+  canvas.height=Math.round(v.videoHeight*scale);
+  canvas.getContext('2d').drawImage(v,0,0,canvas.width,canvas.height);
+  return canvas.toDataURL('image/jpeg',0.85);
+}
+function captureFromFile(file){
+  return new Promise((resolve,reject)=>{
+    const img=new Image(); const url=URL.createObjectURL(file);
+    img.onload=()=>{
+      const maxW=1024, scale=Math.min(1,maxW/img.width);
+      const canvas=document.createElement('canvas');
+      canvas.width=Math.round(img.width*scale);
+      canvas.height=Math.round(img.height*scale);
+      canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+      URL.revokeObjectURL(url);
+      resolve(canvas.toDataURL('image/jpeg',0.85));
+    };
+    img.onerror=()=>{ URL.revokeObjectURL(url); reject(); };
+    img.src=url;
+  });
+}
+async function callPalmAPI(dataUrl){
+  const res=await fetch(API_BASE+'/api/palm',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({image:dataUrl})
+  });
+  if(!res.ok) throw new Error('status '+res.status);
+  return await res.json();
+}
+function renderPalm(r){
+  const body=document.getElementById('palmBody');
+  // サーバー未差し替え・通信失敗・エラー → 準備中
+  if(!r || r.__error || r.error){
+    body.innerHTML=`<div class="palm-pending">🌿 ただいま手相のAI読み解きを準備中です。<small>サーバーの準備ができると、ここに「写真を見て読み解いた本物のメッセージ」が表示されます。</small></div>`;
+    return;
+  }
+  // 手のひらがうまく写っていない場合のやさしい案内
+  if(r.found===false){
+    body.innerHTML=`<div class="palm-pending">📷 ${escapeHtml(r.advice||'もう少し明るい場所で、手のひら全体が写るように撮ると、もっとよく見えそうです。')}</div>`;
+    return;
+  }
+  let html='';
+  if(r.summary) html+=`<div class="palm-summary">${escapeHtml(r.summary)}</div>`;
+  if(Array.isArray(r.lines)){
+    r.lines.forEach(l=>{ html+=`<div class="palm-line"><span class="pl-name">${escapeHtml(l.name||'')}</span><span class="pl-msg">${escapeHtml(l.message||'')}</span></div>`; });
+  }
+  if(r.advice) html+=`<div class="palm-advice">🌟 ${escapeHtml(r.advice)}</div>`;
+  body.innerHTML=html || `<div class="palm-pending">あなたの手のひらから、やさしい光が見えます。</div>`;
+}
+
+/* ===================================================================
+   カメラ・画面遷移・解析演出
+   =================================================================== */
+const video=document.getElementById('video');
+let stream=null;
+
+async function startCamera(){
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' }, audio:false });
+    video.srcObject=stream; video.style.display='block';
+  }catch(e){
+    video.style.display='none';
+    const stage=document.getElementById('camStage');
+    if(!stage.querySelector('.cam-fallback')){
+      const fb=document.createElement('div'); fb.className='cam-fallback';
+      fb.innerHTML='📷 カメラを使えませんでした。<br>下の「写真をアップロードする」から手のひらの写真を選んでください。';
+      stage.insertBefore(fb,stage.firstChild);
+    }
+  }
+}
+function stopCamera(){ if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; } }
+
+document.getElementById('toStep2').addEventListener('click',()=>{
+  const y=+document.getElementById('year').value, m=+document.getElementById('month').value, d=+document.getElementById('day').value;
+  if(!y||!m||!d){ alert('生まれた年・月・日をえらんでね 🌿'); return; }
+  userBirth={y,m,d};
+  document.getElementById('step1').style.display='none';
+  document.getElementById('step2').style.display='block';
+  startCamera();
+  window.scrollTo({top:0,behavior:'smooth'});
+});
+
+async function goAnalyze(source){
+  // 1. 写真を取得（カメラ or ファイル）
+  let imgData=null;
+  try{
+    if(source==='camera') imgData=captureFromVideo();
+    else if(source instanceof File) imgData=await captureFromFile(source);
+  }catch(e){ imgData=null; }
+  stopCamera();
+
+  // 2. 解析演出を表示
+  document.getElementById('step2').style.display='none';
+  const analyze=document.getElementById('analyze'); analyze.style.display='block';
+  const box=analyze.querySelector('.analyze-box');
+  box.querySelectorAll('.spark').forEach(s=>s.remove());
+  for(let i=0;i<8;i++){
+    const s=document.createElement('span'); s.className='spark';
+    s.style.left=(10+Math.random()*80)+'%'; s.style.top=(10+Math.random()*80)+'%';
+    s.style.animationDelay=(Math.random()*1.2)+'s';
+    if(i%2){ s.style.background='var(--sprout)'; s.style.boxShadow='0 0 8px 2px rgba(163,193,173,.7)'; }
+    box.appendChild(s);
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
+
+  // 3. AI呼び出しと2秒演出を並行（失敗しても準備中表示になる）
+  const apiPromise = imgData ? callPalmAPI(imgData).catch(()=>({__error:true})) : Promise.resolve({__error:true});
+  const waitPromise = new Promise(r=>setTimeout(r,2000));
+  const [palmResult] = await Promise.all([apiPromise, waitPromise]);
+
+  // 4. 結果表示
+  analyze.style.display='none';
+  runFortune();
+  renderPalm(palmResult);
+  document.getElementById('results').style.display='block';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.getElementById('shutter').addEventListener('click',()=>goAnalyze('camera'));
+document.getElementById('uploadBtn').addEventListener('click',()=>document.getElementById('fileInput').click());
+document.getElementById('fileInput').addEventListener('change',e=>{ if(e.target.files.length) goAnalyze(e.target.files[0]); });
+
+document.getElementById('restart').addEventListener('click',()=>{
+  document.getElementById('results').style.display='none';
+  document.getElementById('step2').style.display='none';
+  document.getElementById('step1').style.display='block';
+  document.getElementById('palmBody').innerHTML='';
+  window.scrollTo({top:0,behavior:'smooth'});
+});
+
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById(tab.dataset.screen).classList.add('active');
+    if(tab.dataset.screen!=='fortune') stopCamera();
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+});
+
+/* ===================================================================
+   相性診断
+   =================================================================== */
+function compatScore(y1,m1,d1,y2,m2,d2){
+  const lp1=lifePath(y1,m1,d1), lp2=lifePath(y2,m2,d2);
+  const diff=Math.abs(lp1-lp2); const seed=(y1+m1+d1+y2+m2+d2)%17;
+  let base=99-diff*3-seed; let pct=66+(((base%34)+34)%34);
+  return { pct, lp1, lp2 };
+}
+const COMPAT_MSG=[
+  "ちがう色を持つふたりだからこそ、足りないところを自然に補い合える、心地よい関係です。",
+  "似たもの同士で、一緒にいるだけでほっと安心できる、あたたかいご縁です。",
+  "テンポがぴったり合うふたり。笑いのツボも近くて、一緒にいる時間がきらめきます。",
+  "おだやかに寄りそえる関係。お互いのペースを大切にできる、長続きする相性です。",
+  "刺激し合って成長できるふたり。一緒にいると、新しい世界がどんどん広がります。"
+];
+const COMPAT_ADVICE=[
+  "「ありがとう」を言葉にして伝えるだけで、ふたりの絆はもっとあたたかくなります。今日ひとつ、感謝を声に出してみて。",
+  "相手の「好きなもの」を一緒に楽しんでみると、ぐっと距離が縮まります。今度おすすめを聞いてみて。",
+  "ときどき、なにげない近況をシェアする時間を。小さな会話が、大きな安心になります。",
+  "意見がちがっても大丈夫。「そういう考えもあるね」と受けとめ合えると、もっと仲よくなれます。",
+  "一緒にのんびり過ごす時間を、意識して作ってみて。同じ景色を見るだけで心が通います。"
+];
+document.getElementById('calcCompat').addEventListener('click',()=>{
+  const v=id=>+document.getElementById(id).value;
+  const y1=v('cy1'),m1=v('cm1'),d1=v('cd1'),y2=v('cy2'),m2=v('cm2'),d2=v('cd2');
+  if(!y1||!m1||!d1||!y2||!m2||!d2){ alert('ふたりの生まれた日をえらんでね 🌿'); return; }
+  const {pct,lp1,lp2}=compatScore(y1,m1,d1,y2,m2,d2);
+  document.getElementById('compatPct').innerHTML=pct+'<small>%</small>';
+  const hearts=Math.round(pct/20);
+  document.getElementById('compatHearts').textContent='♥'.repeat(hearts)+'♡'.repeat(5-hearts);
+  document.getElementById('compatMsg').textContent=COMPAT_MSG[(lp1+lp2)%COMPAT_MSG.length];
+  document.getElementById('compatAdvice').textContent=COMPAT_ADVICE[(lp1*lp2)%COMPAT_ADVICE.length];
+  document.getElementById('compatInput').style.display='none';
+  document.getElementById('compatResult').style.display='block';
+  window.scrollTo({top:0,behavior:'smooth'});
+});
+document.getElementById('compatAgain').addEventListener('click',()=>{
+  document.getElementById('compatResult').style.display='none';
+  document.getElementById('compatInput').style.display='block';
+  window.scrollTo({top:0,behavior:'smooth'});
+});
+</script>
+</body>
+</html>

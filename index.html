@@ -259,7 +259,7 @@
       <!-- 六星占術 運気年表 -->
       <div class="card">
         <div class="step-label" style="margin-bottom:10px;"><svg class="leaf" viewBox="0 0 24 24" fill="currentColor"><path d="M5 19c0-8 6-14 14-14 0 8-6 14-14 14Z"/></svg>これからの12年の運気カレンダー</div>
-        <div style="text-align:center;"><span class="star-pill" id="starPill">水星人＋</span></div>
+        <div style="text-align:center;"><span class="star-pill" id="starPill">水星人＋</span><div id="reigouNote" style="font-size:.78rem;color:#8a9890;margin-top:8px;"></div></div>
         <ul class="timeline" id="timeline"></ul>
       </div>
 
@@ -384,9 +384,30 @@ const LP_TYPES = {
   33:["無償の愛をそそぐヒーラータイプ","まわりを癒やす、大きくてあたたかい愛の人"]
 };
 
-/* ---------- 六星占術（簡易判定）＋ 12年運気カレンダー ---------- */
-const STARS=['土星人','金星人','火星人','天王星人','木星人','水星人'];
-function calcStar(y,m,d){ const idx=(y*1+m*3+d)%6; const sign=((y+d)%2===0)?'＋':'－'; return { name:STARS[idx]+sign, idx }; }
+/* ---------- 六星占術（本式の計算・実例で検証済み）＋ 12年運気カレンダー ----------
+   検証：1965-07-06→水星人－ / 2000-02-10→天王星人＋(霊合星人) / 1985-10-23→天王星人－
+   いずれも実例とすべて一致。 */
+// ユリウス通日（誕生日の干支番号＝星数の算出に使用）
+function julianDay(y,m,d){
+  const a=Math.floor((14-m)/12), yy=y+4800-a, mm=m+12*a-3;
+  return d+Math.floor((153*mm+2)/5)+365*yy+Math.floor(yy/4)-Math.floor(yy/100)+Math.floor(yy/400)-32045;
+}
+// 星数（1〜60）＝誕生日の干支番号
+function seisu(y,m,d){ return ((julianDay(y,m,d)+49)%60)+1; }
+// 星数→運命星（10ずつ：土・金・火・天王・木・水）
+const STAR_BANDS=['土星人','金星人','火星人','天王星人','木星人','水星人'];
+// 生まれ年の十二支が「停止」に当たると霊合星人（星人＋極性ごとの該当干支）
+const REIGOU_BRANCH={'土星人＋':10,'土星人－':11,'金星人＋':8,'金星人－':9,'火星人＋':6,'火星人－':7,'天王星人＋':4,'天王星人－':5,'木星人＋':2,'木星人－':3,'水星人＋':0,'水星人－':1};
+function calcStar(y,m,d){
+  // 細木式（暦年ベース・節分/立春調整なし）。netoffの運命数表・実例と一致を確認済み
+  const branch=((y-4)%12+12)%12;               // 0=子,1=丑,…,11=亥
+  const sign=(branch%2===0)?'＋':'－';           // 子寅辰午申戌＝陽(＋)、丑卯巳未酉亥＝陰(－)
+  const s=seisu(y,m,d);
+  const band=STAR_BANDS[Math.min(5,Math.floor((s-1)/10))];
+  const reigou=(REIGOU_BRANCH[band+sign]===branch);
+  return { name:band+sign, band, sign, reigou };
+}
+// 12周期（順番）。大殺界＝陰影・停止・減退、小殺界＝健弱
 const CYCLE=[
   {n:"種子",t:"あたらしい種まきの季節 🌱",m:"未来の自分への種をまく、わくわくスタートの一年。",cls:""},
   {n:"緑生",t:"芽吹きのよろこび 🌿",m:"まいた種が小さな芽を出す、希望がぐんぐん育つ一年。",cls:""},
@@ -397,14 +418,21 @@ const CYCLE=[
   {n:"再会",t:"なつかしさの贈りもの 🎁",m:"大切なご縁や良いものが、ふわっと戻ってくる、ほっこりの一年。",cls:""},
   {n:"財成",t:"ゆたかさが満ちる季節 💰",m:"心もお財布もうるおう、めぐみ豊かな一年。",cls:""},
   {n:"安定",t:"おだやかな晴れの日 ☀️",m:"すべてが落ち着く、心地よく安定した一年。",cls:""},
-  {n:"陥落",t:"人生の温泉タイム ♨️",m:"自分をトコトン甘やかすメンテナンス期間。のんびりが正解の一年。",cls:"warm"},
+  {n:"陰影",t:"人生の温泉タイム ♨️",m:"自分をトコトン甘やかすメンテナンス期間。のんびりが正解の一年。",cls:"warm"},
   {n:"停止",t:"静かなおやすみモード 🛌",m:"無理せずのんびり、英気を養うリセット期間。やさしく過ごす一年。",cls:"warm"},
   {n:"減退",t:"そっと充電タイム 🔋",m:"来る春のために力をためる、やさしい準備期間の一年。",cls:"warm"}
 ];
-function buildTimeline(y,m,d,starIdx){
-  const startYear=2026; const offset=(y+m+d+starIdx)%12; let html="";
-  for(let i=0;i<12;i++){ const c=CYCLE[(offset+i)%12]; const year=startYear+i; const age=year-y;
-    html+=`<li class="${c.cls}"><span class="yr">${year}<small>${age}才</small></span><span class="msg"><b>${c.t}</b><br>${c.m}</span></li>`; }
+// 各運命星の「2026年の周期位置(1〜12)」。公式系の2026年運早見表で全12種を確認済み
+const BASE_2026={
+  '土星人＋':7,'土星人－':6, '金星人＋':9,'金星人－':8, '火星人＋':11,'火星人－':10,
+  '天王星人＋':1,'天王星人－':12, '木星人＋':3,'木星人－':2, '水星人＋':5,'水星人－':4
+};
+function buildTimeline(star){
+  const base=BASE_2026[star.name]||1; const startYear=2026; let html="";
+  for(let i=0;i<12;i++){
+    const c=CYCLE[((base-1)+i)%12]; const year=startYear+i;
+    html+=`<li class="${c.cls}"><span class="yr">${year}</span><span class="msg"><b>${c.t}</b><br>${c.m}</span></li>`;
+  }
   return html;
 }
 
@@ -444,8 +472,11 @@ function runFortune(){
   const t=LP_TYPES[lp]||LP_TYPES[1];
   document.getElementById('lpType').innerHTML=`あなたの本質：${t[0]}<small>${t[1]}</small>`;
   const star=calcStar(y,m,d);
-  document.getElementById('starPill').textContent=star.name;
-  document.getElementById('timeline').innerHTML=buildTimeline(y,m,d,star.idx);
+  document.getElementById('starPill').textContent=star.name+(star.reigou?'（霊合星人）':'');
+  document.getElementById('reigouNote').textContent=star.reigou
+    ? '※12人に1人の特別な「霊合星人」。表の運気に加えて、対極の星のよさも併せ持つ、二倍ゆたかなタイプです。'
+    : '';
+  document.getElementById('timeline').innerHTML=buildTimeline(star);
   setupTarot();
 }
 
